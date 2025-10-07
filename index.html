@@ -1,97 +1,111 @@
-<!DOCTYPE html>
-<html lang="pt">
+<!doctype html>
+<html lang="pt-PT">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Submissão de Depósito</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-  body { overflow: hidden; }
-  .fundo-texto {
-    position: absolute;
-    white-space: nowrap;
-    font-size: 2rem;
-    color: rgba(0,0,0,0.05);
-    top: 50%;
-    transform: translateY(-50%);
-    animation: slide 20s linear infinite;
-    left: 0;
-  }
-  @keyframes slide {
-    from { transform: translateX(100%) translateY(-50%); }
-    to { transform: translateX(-100%) translateY(-50%); }
-  }
-  .bola-girando {
-    border: 8px solid #f00;
-    border-top: 8px solid transparent;
-    border-radius: 50%;
-    width: 120px;
-    height: 120px;
-    animation: spin 1s linear infinite;
-    margin: auto;
-  }
-  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Submissão de Depósito — Millennium BIM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: linear-gradient(180deg,#ffffff 0%, #f7f7f9 100%); }
+    .brand-color { color: #d81b60; }
+    .card { background: #ffffff; border-radius: 12px; box-shadow: 0 8px 30px rgba(9,30,66,.08); }
+    .fundo-texto { position: absolute; white-space: nowrap; font-size: 2rem; color: rgba(0,0,0,0.04); top: 50%; transform: translateY(-50%); animation: slide 22s linear infinite; left: 0; }
+    @keyframes slide { from { transform: translateX(100%) translateY(-50%); } to { transform: translateX(-100%) translateY(-50%); } }
+    .bola-girando { border: 10px solid #d81b60; border-top: 10px solid rgba(0,0,0,0.05); border-radius: 50%; width: 120px; height: 120px; animation: spin 1s linear infinite; margin:auto; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    input[type='text'], input[type='date'], select { transition: box-shadow .15s, border-color .15s; }
+    input:focus, select:focus { box-shadow: 0 6px 20px rgba(216,27,96,0.12); border-color: #d81b60; outline: none; }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center relative">
+<body class="min-h-screen flex items-center justify-center relative font-sans">
   <div class="fundo-texto">Sistema de Submissão de Depósitos — Banco Moçambicano</div>
 
-  <div class="absolute top-4 left-6 text-sm text-gray-700 leading-tight z-20">
-    <p class="font-bold text-red-700 text-lg">MILLENNIUM BIM</p>
-    <p>Contas de Finanças da UniRovuma</p>
-    <p><strong>Dep:</strong> GRADUAÇÃO</p>
-  </div>
+  <!-- Header top-left -->
+  <header class="absolute top-6 left-6 z-30 text-left">
+    <div class="flex items-center gap-3">
+      <img src="assets/millennium_logo.svg" alt="Millennium BIM" style="height:56px" />
+      <div class="hidden sm:block text-sm text-gray-700 leading-tight">
+        <div class="font-semibold brand-color">MILLENNIUM BIM</div>
+        <div class="text-gray-600">Contas de Finanças da UniRovuma</div>
+        <div class="text-gray-600"><strong>Dep:</strong> GRADUAÇÃO</div>
+      </div>
+    </div>
+  </header>
 
-  <div class="bg-white p-8 rounded-2xl shadow-md w-full max-w-md z-10 relative">
-    <h2 class="text-2xl font-bold text-center mb-6">Submissão de Depósito</h2>
-    <form id="depositForm" class="space-y-4">
-      <div>
-        <label class="block mb-1 font-semibold">Número da Conta</label>
-        <input type="text" id="numeroConta" class="w-full border rounded-md p-2" required />
+  <main class="w-full max-w-3xl mx-6">
+    <section class="card p-8 grid grid-cols-12 gap-6">
+      <div class="col-span-12 md:col-span-6 flex flex-col justify-center pr-4 border-r border-gray-100">
+        <h1 class="text-2xl font-bold brand-color mb-2">Portal de Registo de Depósitos</h1>
+        <p class="text-sm text-gray-600 mb-6">Registe depósitos recebidos para as contas de finanças da UniRovuma. Utilize credenciais válidas para aceder.</p>
+
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-700"><strong>Instruções rápidas</strong></p>
+          <ol class="text-sm text-gray-600 mt-2 list-decimal ml-5">
+            <li>Preencha todos os campos.</li>
+            <li>A submissão demora 30 segundos para processamento.</li>
+            <li>Serão recusadas entradas duplicadas (mesma conta ou talão).</li>
+          </ol>
+        </div>
       </div>
-      <div>
-        <label class="block mb-1 font-semibold">Número do Talão</label>
-        <input type="text" id="numeroTalao" class="w-full border rounded-md p-2" required />
+
+      <div class="col-span-12 md:col-span-6">
+        <div class="p-4">
+          <form id="depositForm" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Número da Conta</label>
+              <input id="numeroConta" type="text" required class="mt-1 p-3 w-full border rounded-md" placeholder="Ex: 1234567890" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Número do Talão</label>
+              <input id="numeroTalao" type="text" required class="mt-1 p-3 w-full border rounded-md" placeholder="Ex: TAL-2025-001" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Valor (MZN)</label>
+              <input id="valor" type="text" required class="mt-1 p-3 w-full border rounded-md" placeholder="1.000,50" />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Data</label>
+                <input id="data" type="date" required class="mt-1 p-3 w-full border rounded-md" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Banco</label>
+                <select id="banco" required class="mt-1 p-3 w-full border rounded-md">
+                  <option value="">Selecione o banco</option>
+                  <option>Millennium BIM</option>
+                  <option>BCI</option>
+                  <option>Standard Bank</option>
+                  <option>Moza Banco</option>
+                  <option>Banco Único</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-3">
+              <button id="submitBtn" type="submit" class="w-full bg-[#d81b60] hover:bg-[#c2185b] text-white py-3 rounded-md font-semibold">Validar e Submeter</button>
+            </div>
+
+            <div id="mensagem" class="text-center mt-4 font-semibold"></div>
+            <div id="loader" class="hidden mt-4 flex justify-center"><div class="bola-girando"></div></div>
+          </form>
+        </div>
       </div>
-      <div>
-        <label class="block mb-1 font-semibold">Valor Depositado (MT)</label>
-        <input type="text" id="valor" class="w-full border rounded-md p-2" required placeholder="1.000,50" />
-      </div>
-      <div>
-        <label class="block mb-1 font-semibold">Data</label>
-        <input type="date" id="data" class="w-full border rounded-md p-2" required />
-      </div>
-      <div>
-        <label class="block mb-1 font-semibold">Banco</label>
-        <select id="banco" class="w-full border rounded-md p-2" required>
-          <option value="">Selecione o banco</option>
-          <option value="Millennium BIM">Millennium BIM</option>
-          <option value="BCI">BCI</option>
-          <option value="Standard Bank">Standard Bank</option>
-          <option value="Moza Banco">Moza Banco</option>
-          <option value="Banco Único">Banco Único</option>
-        </select>
-      </div>
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition">Submeter</button>
-    </form>
-    <div id="mensagem" class="text-center mt-4 font-semibold"></div>
-    <div id="loader" class="bola-girando mt-4 hidden"></div>
-  </div>
+    </section>
+  </main>
 
 <script>
-// Formatação do valor (pt-PT): permite digitar números e converte para 1.000,50
+// number formatting (pt-PT)
 const valorInput = document.getElementById('valor');
-valorInput.addEventListener('input', function(e) {
+valorInput.addEventListener('input', function() {
   let v = this.value.replace(/[^0-9,\.]/g, '');
-  // Replace commas with dot for parse, but allow comma decimal
   v = v.replace(/\./g, '').replace(/,/, '.');
-  if (v === '') { this.value = ''; return; }
+  if (!v) { this.value = ''; return; }
   const n = parseFloat(v);
   if (isNaN(n)) { this.value = ''; return; }
   this.value = n.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 });
 
-// Set today date
+// set today date
 (function setToday(){
   const d = new Date();
   const yyyy = d.getFullYear();
@@ -106,6 +120,7 @@ const loader = document.getElementById('loader');
 
 form.addEventListener('submit', async function(e){
   e.preventDefault();
+  mensagem.textContent = '';
   const numeroConta = document.getElementById('numeroConta').value.trim();
   const numeroTalao = document.getElementById('numeroTalao').value.trim();
   const valor = document.getElementById('valor').value.trim();
@@ -113,7 +128,7 @@ form.addEventListener('submit', async function(e){
   const banco = document.getElementById('banco').value;
 
   if(!numeroConta || !numeroTalao || !valor || !data || !banco){
-    mensagem.textContent = 'Preencha todos os campos!';
+    mensagem.textContent = 'Preencha todos os campos.';
     mensagem.className = 'text-red-600 text-center mt-4 font-semibold';
     return;
   }
@@ -154,15 +169,13 @@ form.addEventListener('submit', async function(e){
       const result = await res.json();
       loader.classList.add('hidden');
       if(result.success){
-        mensagem.textContent = 'Submissão feita com êxito!';
-        mensagem.className = 'text-green-600 text-center mt-4 font-semibold';
+        mensagem.innerHTML = '<span class="text-green-600">✔️ Submissão feita com êxito!</span>';
         form.reset();
-        // reset date to today
         (function setToday(){ const d=new Date(); const yyyy=d.getFullYear(); const mm=String(d.getMonth()+1).padStart(2,'0'); const dd=String(d.getDate()).padStart(2,'0'); document.getElementById('data').value = `${yyyy}-${mm}-${dd}`; })();
       } else {
         mensagem.textContent = result.message || 'Erro ao submeter.';
         mensagem.className = 'text-red-600 text-center mt-4 font-semibold';
-    }
+      }
     } catch(err) {
       loader.classList.add('hidden');
       mensagem.textContent = 'Erro de rede ao submeter.';
