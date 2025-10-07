@@ -1,7 +1,6 @@
 {
-  "name": "formulario-submissao-deposito",
+  "name": "formulario-submissao-unirovuma",
   "version": "1.0.0",
-  "description": "Aplicação web simples para submissão de depósitos bancários.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

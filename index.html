@@ -6,9 +6,7 @@
 <title>Submissão de Depósito</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  body {
-    overflow: hidden;
-  }
+  body { overflow: hidden; }
   .fundo-texto {
     position: absolute;
     white-space: nowrap;
@@ -17,6 +15,7 @@
     top: 50%;
     transform: translateY(-50%);
     animation: slide 20s linear infinite;
+    left: 0;
   }
   @keyframes slide {
     from { transform: translateX(100%) translateY(-50%); }
@@ -26,19 +25,23 @@
     border: 8px solid #f00;
     border-top: 8px solid transparent;
     border-radius: 50%;
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
     animation: spin 1s linear infinite;
     margin: auto;
   }
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center relative">
   <div class="fundo-texto">Sistema de Submissão de Depósitos — Banco Moçambicano</div>
+
+  <div class="absolute top-4 left-6 text-sm text-gray-700 leading-tight z-20">
+    <p class="font-bold text-red-700 text-lg">MILLENNIUM BIM</p>
+    <p>Contas de Finanças da UniRovuma</p>
+    <p><strong>Dep:</strong> GRADUAÇÃO</p>
+  </div>
+
   <div class="bg-white p-8 rounded-2xl shadow-md w-full max-w-md z-10 relative">
     <h2 class="text-2xl font-bold text-center mb-6">Submissão de Depósito</h2>
     <form id="depositForm" class="space-y-4">
@@ -76,12 +79,26 @@
   </div>
 
 <script>
-// Formatação do valor com ponto e vírgula
+// Formatação do valor (pt-PT): permite digitar números e converte para 1.000,50
 const valorInput = document.getElementById('valor');
-valorInput.addEventListener('input', function() {
-  let v = this.value.replace(/[^\d,]/g,'').replace(',', '.');
-  if(v) this.value = parseFloat(v).toLocaleString('pt-PT', {minimumFractionDigits:2, maximumFractionDigits:2});
+valorInput.addEventListener('input', function(e) {
+  let v = this.value.replace(/[^0-9,\.]/g, '');
+  // Replace commas with dot for parse, but allow comma decimal
+  v = v.replace(/\./g, '').replace(/,/, '.');
+  if (v === '') { this.value = ''; return; }
+  const n = parseFloat(v);
+  if (isNaN(n)) { this.value = ''; return; }
+  this.value = n.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 });
+
+// Set today date
+(function setToday(){
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  document.getElementById('data').value = `${yyyy}-${mm}-${dd}`;
+})();
 
 const form = document.getElementById('depositForm');
 const mensagem = document.getElementById('mensagem');
@@ -89,7 +106,6 @@ const loader = document.getElementById('loader');
 
 form.addEventListener('submit', async function(e){
   e.preventDefault();
-
   const numeroConta = document.getElementById('numeroConta').value.trim();
   const numeroTalao = document.getElementById('numeroTalao').value.trim();
   const valor = document.getElementById('valor').value.trim();
@@ -106,74 +122,54 @@ form.addEventListener('submit', async function(e){
   mensagem.textContent = 'Submissão no banco de dados em andamento...';
   mensagem.className = 'text-blue-600 text-center mt-4 font-semibold';
 
-  // Verificar duplicados no backend
-  const resCheck = await fetch('/api/deposito/check', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({numeroConta, numeroTalao})
-  });
-  const checkData = await resCheck.json();
-  if(!checkData.ok){
+  // check duplicates
+  try {
+    const resCheck = await fetch('/api/deposito/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ numeroConta, numeroTalao })
+    });
+    const checkData = await resCheck.json();
+    if (!checkData.ok) {
+      loader.classList.add('hidden');
+      mensagem.textContent = checkData.message;
+      mensagem.className = 'text-red-600 text-center mt-4 font-semibold';
+      return;
+    }
+  } catch(err) {
     loader.classList.add('hidden');
-    mensagem.textContent = checkData.message;
+    mensagem.textContent = 'Erro de rede ao verificar duplicados.';
     mensagem.className = 'text-red-600 text-center mt-4 font-semibold';
     return;
   }
 
-  // Simular processamento 30s
+  // simulate 30s processing
   setTimeout(async ()=>{
-    const res = await fetch('/api/deposito', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({numeroConta, numeroTalao, valor, data, banco})
-    });
-    const result = await res.json();
-    loader.classList.add('hidden');
-    if(result.success){
-      mensagem.textContent = 'Submissão feita com êxito!';
-      mensagem.className = 'text-green-600 text-center mt-4 font-semibold';
-      form.reset();
-    } else {
-      mensagem.textContent = result.message;
+    try {
+      const res = await fetch('/api/deposito', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ numeroConta, numeroTalao, valor, data, banco })
+      });
+      const result = await res.json();
+      loader.classList.add('hidden');
+      if(result.success){
+        mensagem.textContent = 'Submissão feita com êxito!';
+        mensagem.className = 'text-green-600 text-center mt-4 font-semibold';
+        form.reset();
+        // reset date to today
+        (function setToday(){ const d=new Date(); const yyyy=d.getFullYear(); const mm=String(d.getMonth()+1).padStart(2,'0'); const dd=String(d.getDate()).padStart(2,'0'); document.getElementById('data').value = `${yyyy}-${mm}-${dd}`; })();
+      } else {
+        mensagem.textContent = result.message || 'Erro ao submeter.';
+        mensagem.className = 'text-red-600 text-center mt-4 font-semibold';
+    }
+    } catch(err) {
+      loader.classList.add('hidden');
+      mensagem.textContent = 'Erro de rede ao submeter.';
       mensagem.className = 'text-red-600 text-center mt-4 font-semibold';
     }
   }, 30000);
 });
 </script>
-</body>
-</html>
-          <option value="Banco Único">Banco Único</option>
-        </select>
-      </div>
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition">Submeter</button>
-    </form>
-    <p id="mensagem" class="text-center mt-4 font-semibold"></p>
-  </div>
-  <script>
-    document.getElementById('depositForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const data = {
-        numeroConta: document.getElementById('numeroConta').value.trim(),
-        numeroTalao: document.getElementById('numeroTalao').value.trim(),
-        valor: parseFloat(document.getElementById('valor').value),
-        data: document.getElementById('data').value,
-        banco: document.getElementById('banco').value
-      };
-      if (!data.numeroConta.match(/^\d{6,}$/)) {
-        document.getElementById('mensagem').textContent = 'Número da conta inválido.';
-        document.getElementById('mensagem').className = 'text-red-600 text-center mt-4 font-semibold';
-        return;
-      }
-      const res = await fetch('/api/deposito', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      const result = await res.json();
-      document.getElementById('mensagem').textContent = result.message;
-      document.getElementById('mensagem').className = result.success ? 'text-green-600 text-center mt-4 font-semibold' : 'text-red-600 text-center mt-4 font-semibold';
-      if (result.success) document.getElementById('depositForm').reset();
-    });
-  </script>
 </body>
 </html>
