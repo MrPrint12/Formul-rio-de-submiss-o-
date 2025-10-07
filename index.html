@@ -1,13 +1,45 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Submissão de Depósito</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Submissão de Depósito</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body {
+    overflow: hidden;
+  }
+  .fundo-texto {
+    position: absolute;
+    white-space: nowrap;
+    font-size: 2rem;
+    color: rgba(0,0,0,0.05);
+    top: 50%;
+    transform: translateY(-50%);
+    animation: slide 20s linear infinite;
+  }
+  @keyframes slide {
+    from { transform: translateX(100%) translateY(-50%); }
+    to { transform: translateX(-100%) translateY(-50%); }
+  }
+  .bola-girando {
+    border: 8px solid #f00;
+    border-top: 8px solid transparent;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    animation: spin 1s linear infinite;
+    margin: auto;
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+</style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-  <div class="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center relative">
+  <div class="fundo-texto">Sistema de Submissão de Depósitos — Banco Moçambicano</div>
+  <div class="bg-white p-8 rounded-2xl shadow-md w-full max-w-md z-10 relative">
     <h2 class="text-2xl font-bold text-center mb-6">Submissão de Depósito</h2>
     <form id="depositForm" class="space-y-4">
       <div>
@@ -20,7 +52,7 @@
       </div>
       <div>
         <label class="block mb-1 font-semibold">Valor Depositado (MT)</label>
-        <input type="number" id="valor" class="w-full border rounded-md p-2" required />
+        <input type="text" id="valor" class="w-full border rounded-md p-2" required placeholder="1.000,50" />
       </div>
       <div>
         <label class="block mb-1 font-semibold">Data</label>
@@ -34,6 +66,82 @@
           <option value="BCI">BCI</option>
           <option value="Standard Bank">Standard Bank</option>
           <option value="Moza Banco">Moza Banco</option>
+          <option value="Banco Único">Banco Único</option>
+        </select>
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition">Submeter</button>
+    </form>
+    <div id="mensagem" class="text-center mt-4 font-semibold"></div>
+    <div id="loader" class="bola-girando mt-4 hidden"></div>
+  </div>
+
+<script>
+// Formatação do valor com ponto e vírgula
+const valorInput = document.getElementById('valor');
+valorInput.addEventListener('input', function() {
+  let v = this.value.replace(/[^\d,]/g,'').replace(',', '.');
+  if(v) this.value = parseFloat(v).toLocaleString('pt-PT', {minimumFractionDigits:2, maximumFractionDigits:2});
+});
+
+const form = document.getElementById('depositForm');
+const mensagem = document.getElementById('mensagem');
+const loader = document.getElementById('loader');
+
+form.addEventListener('submit', async function(e){
+  e.preventDefault();
+
+  const numeroConta = document.getElementById('numeroConta').value.trim();
+  const numeroTalao = document.getElementById('numeroTalao').value.trim();
+  const valor = document.getElementById('valor').value.trim();
+  const data = document.getElementById('data').value;
+  const banco = document.getElementById('banco').value;
+
+  if(!numeroConta || !numeroTalao || !valor || !data || !banco){
+    mensagem.textContent = 'Preencha todos os campos!';
+    mensagem.className = 'text-red-600 text-center mt-4 font-semibold';
+    return;
+  }
+
+  loader.classList.remove('hidden');
+  mensagem.textContent = 'Submissão no banco de dados em andamento...';
+  mensagem.className = 'text-blue-600 text-center mt-4 font-semibold';
+
+  // Verificar duplicados no backend
+  const resCheck = await fetch('/api/deposito/check', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({numeroConta, numeroTalao})
+  });
+  const checkData = await resCheck.json();
+  if(!checkData.ok){
+    loader.classList.add('hidden');
+    mensagem.textContent = checkData.message;
+    mensagem.className = 'text-red-600 text-center mt-4 font-semibold';
+    return;
+  }
+
+  // Simular processamento 30s
+  setTimeout(async ()=>{
+    const res = await fetch('/api/deposito', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({numeroConta, numeroTalao, valor, data, banco})
+    });
+    const result = await res.json();
+    loader.classList.add('hidden');
+    if(result.success){
+      mensagem.textContent = 'Submissão feita com êxito!';
+      mensagem.className = 'text-green-600 text-center mt-4 font-semibold';
+      form.reset();
+    } else {
+      mensagem.textContent = result.message;
+      mensagem.className = 'text-red-600 text-center mt-4 font-semibold';
+    }
+  }, 30000);
+});
+</script>
+</body>
+</html>
           <option value="Banco Único">Banco Único</option>
         </select>
       </div>
